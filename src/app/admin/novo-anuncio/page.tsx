@@ -1,6 +1,6 @@
 'use client'
 
-import { Upload, Plus, Image as ImageIcon, CheckCircle2, Loader2, X } from "lucide-react";
+import { Upload, Plus, Image as ImageIcon, CheckCircle2, Loader2, X, Building2, Store } from "lucide-react";
 import { useState, useTransition, useRef } from "react";
 import { createAnuncio } from "./actions";
 import Image from "next/image";
@@ -9,10 +9,30 @@ export default function NovoAnuncio() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   
-  // Imagens
+  // Imagens do Produto
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Logomarca do Estabelecimento
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setLogoFile(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeLogo = () => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoFile(null);
+    setLogoPreview(null);
+    if (logoInputRef.current) logoInputRef.current.value = '';
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -42,6 +62,11 @@ export default function NovoAnuncio() {
     
     const formData = new FormData(e.currentTarget);
     formData.append('status', status);
+    
+    // Adicionar a logo se selecionada
+    if (logoFile) {
+      formData.set('logo_estabelecimento', logoFile);
+    }
     
     // Adicionar as fotos
     files.forEach(file => {
@@ -132,8 +157,85 @@ export default function NovoAnuncio() {
             </div>
           </div>
 
+          {/* Dados do Estabelecimento / Dono do Anúncio */}
           <div className="bg-zinc-950/50 backdrop-blur-xl border border-zinc-800/50 p-6 rounded-2xl">
-            <h3 className="text-lg font-semibold text-white mb-6 border-b border-zinc-800 pb-4">Mídia</h3>
+            <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-blue-500" />
+              Dados do Estabelecimento (Dono do Anúncio)
+            </h3>
+            <p className="text-zinc-500 text-xs mb-6 border-b border-zinc-800 pb-4">
+              Informe o nome do estabelecimento e a logomarca para aparecer no anúncio como anunciante.
+            </p>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-300">Nome do Estabelecimento / Loja</label>
+                  <input 
+                    type="text" 
+                    name="nome_estabelecimento"
+                    placeholder="Ex: Auto Motors, Super Loja Tech..."
+                    className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-300">WhatsApp do Estabelecimento</label>
+                  <input 
+                    type="text" 
+                    name="whatsapp_estabelecimento"
+                    placeholder="Ex: 11999999999"
+                    className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Upload da Logomarca */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-300">Logomarca do Estabelecimento</label>
+                <div className="flex items-center gap-4 bg-zinc-900/30 p-4 rounded-xl border border-zinc-800/80">
+                  {logoPreview ? (
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-blue-500/50 bg-zinc-900 shrink-0 shadow-sm">
+                      <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button" 
+                        onClick={removeLogo}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors shadow-xs"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 shrink-0">
+                      <Store className="h-7 w-7 text-zinc-600" />
+                    </div>
+                  )}
+
+                  <div className="flex-grow space-y-1">
+                    <input 
+                      type="file" 
+                      accept="image/*, .png, .jpg, .jpeg, .webp, .svg"
+                      ref={logoInputRef}
+                      onChange={handleLogoChange}
+                      className="hidden"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <Upload className="h-4 w-4 text-blue-400" />
+                      {logoPreview ? 'Trocar Logomarca' : 'Enviar Foto da Logomarca'}
+                    </button>
+                    <p className="text-xs text-zinc-500">PNG, JPG, WEBP ou SVG (Recomendado proporção 1:1 quadrada)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-zinc-950/50 backdrop-blur-xl border border-zinc-800/50 p-6 rounded-2xl">
+            <h3 className="text-lg font-semibold text-white mb-6 border-b border-zinc-800 pb-4">Mídia do Produto</h3>
             
             <input 
               type="file" 

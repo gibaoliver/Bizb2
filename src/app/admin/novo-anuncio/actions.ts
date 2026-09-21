@@ -74,25 +74,74 @@ export async function createAnuncio(formData: FormData) {
     fotoUrls.push(publicUrl)
   }
 
-  // Salvar no banco de dados
-  const { error: insertError } = await supabase
+  // Upload opcional da logomarca do estabelecimento
+  const nomeEstabelecimento = (formData.get('nome_estabelecimento') as string)?.trim() || null
+  const whatsappEstabelecimento = (formData.get('whatsapp_estabelecimento') as string)?.trim() || null
+  const logoFile = formData.get('logo_estabelecimento') as File | null
+  let logoUrl: string | null = null
+
+  if (logoFile && logoFile.size > 0) {
+    const originalExt = logoFile.name.split('.').pop()?.toLowerCase() || 'png'
+    const cleanExt = originalExt.replace(/[^a-z0-9]/gi, '')
+    const logoFileName = `logos/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${cleanExt}`
+    
+    const mimeType = logoFile.type || (
+      cleanExt === 'png' ? 'image/png' :
+      cleanExt === 'webp' ? 'image/webp' :
+      cleanExt === 'svg' ? 'image/svg+xml' :
+      'image/jpeg'
+    )
+
+    const { error: logoUploadError } = await supabase.storage
+      .from('imagens_anuncios')
+      .upload(logoFileName, logoFile, {
+        contentType: mimeType,
+        upsert: true
+      })
+
+    if (!logoUploadError) {
+      const { data: { publicUrl } } = supabase.storage
+        .from('imagens_anuncios')
+        .getPublicUrl(logoFileName)
+      logoUrl = publicUrl
+    } else {
+      console.warn('Aviso: Não foi possível subir a logomarca:', logoUploadError)
+    }
+  }
+
+  // Salvar no banco de dados com dados do estabelecimento
+  const baseData = {
+    autor_id: user.id,
+    titulo,
+    categoria,
+    condicao,
+    descricao,
+    preco,
+    negociavel,
+    localizacao,
+    status,
+    fotos: fotoUrls,
+  }
+
+  let { error: insertError } = await supabase
     .from('anuncios')
     .insert({
-      autor_id: user.id,
-      titulo,
-      categoria,
-      condicao,
-      descricao,
-      preco,
-      negociavel,
-      localizacao,
-      status,
-      fotos: fotoUrls
+      ...baseData,
+      nome_estabelecimento: nomeEstabelecimento,
+      logo_estabelecimento: logoUrl,
+      whatsapp_estabelecimento: whatsappEstabelecimento,
     })
+
+  // Se a tabela ainda não tiver as colunas criadas no banco, fallback gracioso
+  if (insertError && insertError.message?.includes('column')) {
+    console.warn('Tentando fallback sem colunas novas de estabelecimento...')
+    const fallbackRes = await supabase.from('anuncios').insert(baseData)
+    insertError = fallbackRes.error
+  }
 
   if (insertError) {
     console.error('Erro ao salvar anúncio:', insertError)
-    return { error: 'Erro ao salvar o anúncio no banco de dados.' }
+    return { error: `Erro ao salvar o anúncio: ${insertError.message}` }
   }
 
   revalidatePath('/admin/anuncios')

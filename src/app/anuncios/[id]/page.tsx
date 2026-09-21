@@ -54,8 +54,9 @@ export default async function AdDetailsPage({ params }: { params: Promise<{ id: 
       }),
       description: dbAd.descricao,
       seller: {
-        name: 'Super Admin Bizb',
-        phone: '+55 11 99999-9999',
+        name: dbAd.nome_estabelecimento || 'Super Admin Bizb',
+        logo: dbAd.logo_estabelecimento || null,
+        phone: dbAd.whatsapp_estabelecimento || '+55 11 99999-9999',
         email: 'suporte@bizb.com.br',
         verified: true,
       }
@@ -244,7 +245,7 @@ export default async function AdDetailsPage({ params }: { params: Promise<{ id: 
 
               {/* Botão de WhatsApp em Destaque */}
               <a 
-                href={`https://wa.me/5511999999999?text=${whatsappMessage}`}
+                href={`https://wa.me/${((ad.seller?.phone || '5511999999999').replace(/\D/g, '').startsWith('55') ? (ad.seller?.phone || '5511999999999').replace(/\D/g, '') : `55${(ad.seller?.phone || '5511999999999').replace(/\D/g, '')}`)}?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-5 rounded-2xl transition-all shadow-[0_4px_16px_rgba(16,185,129,0.25)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.35)] flex items-center justify-center gap-2.5 text-base group cursor-pointer"
@@ -254,25 +255,35 @@ export default async function AdDetailsPage({ params }: { params: Promise<{ id: 
               </a>
 
               <div className="text-center">
-                <span className="text-xs text-slate-400">Resposta rápida e contato direto</span>
+                <span className="text-xs text-slate-400">Resposta rápida e contato direto com a loja</span>
               </div>
 
               {/* Vendedor Info */}
               <div className="pt-5 border-t border-slate-100 space-y-3">
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
-                  Anunciante
+                  Estabelecimento / Anunciante
                 </span>
                 
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-bold flex items-center justify-center text-lg shadow-xs">
-                    {ad.seller?.name?.charAt(0) || 'B'}
-                  </div>
-                  <div>
-                    <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                      {ad.seller?.name || 'Classificados Bizb'}
-                      <BadgeCheck className="w-4 h-4 text-blue-600" />
+                <div className="flex items-center gap-3.5">
+                  {ad.seller?.logo ? (
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xs shrink-0 flex items-center justify-center">
+                      <img 
+                        src={ad.seller.logo} 
+                        alt={ad.seller.name} 
+                        className="w-full h-full object-cover" 
+                      />
                     </div>
-                    <span className="text-xs text-slate-500 font-medium">Conta Verificada</span>
+                  ) : (
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold flex items-center justify-center text-xl shadow-xs shrink-0">
+                      {ad.seller?.name?.charAt(0) || 'B'}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                      <span className="truncate">{ad.seller?.name || 'Classificados Bizb'}</span>
+                      <BadgeCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                    </div>
+                    <span className="text-xs text-slate-500 font-medium block">Estabelecimento Verificado</span>
                   </div>
                 </div>
               </div>
