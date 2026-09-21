@@ -1,7 +1,24 @@
+'use client';
+
 import Link from "next/link";
-import { Lock, Mail, ArrowRight } from "lucide-react";
+import { Lock, Mail, ArrowRight, Loader2 } from "lucide-react";
+import { login } from "./actions";
+import { useState, useTransition } from "react";
 
 export default function LoginPage() {
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  async function handleSubmit(formData: FormData) {
+    setError(null);
+    startTransition(async () => {
+      const result = await login(formData);
+      if (result?.error) {
+        setError(result.error);
+      }
+    });
+  }
+
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center relative overflow-hidden">
       {/* Background glowing effects */}
@@ -18,7 +35,14 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-zinc-950/50 backdrop-blur-xl border border-zinc-800/50 p-8 rounded-2xl shadow-2xl">
-          <form className="space-y-6">
+          <form action={handleSubmit} className="space-y-6">
+            
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded-lg text-center">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-300" htmlFor="email">
                 E-mail
@@ -29,10 +53,12 @@ export default function LoginPage() {
                 </div>
                 <input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="admin@bizb.com.br"
                   className="w-full pl-10 pr-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                   required
+                  disabled={isPending}
                 />
               </div>
             </div>
@@ -49,23 +75,33 @@ export default function LoginPage() {
                 </div>
                 <input
                   id="password"
+                  name="password"
                   type="password"
                   placeholder="••••••••"
                   className="w-full pl-10 pr-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                   required
+                  disabled={isPending}
                 />
               </div>
             </div>
 
-            <Link href="/admin" className="block w-full">
-              <button
-                type="button"
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-              >
-                Entrar no Painel
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </Link>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Autenticando...
+                </>
+              ) : (
+                <>
+                  Entrar no Painel
+                  <ArrowRight className="h-5 w-5" />
+                </>
+              )}
+            </button>
           </form>
         </div>
         
