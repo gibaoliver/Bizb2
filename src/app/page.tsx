@@ -1,6 +1,10 @@
 import Link from 'next/link';
+import { ads } from '@/data/ads';
 
 export default function Home() {
+  // Pegamos apenas os 8 anúncios mais recentes (ou destaques) para a Home
+  const recentAds = ads.slice(0, 8);
+
   return (
     <div>
       {/* Hero / Banner Section */}
@@ -40,19 +44,19 @@ export default function Home() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {[
-              { id: 'veiculos', label: 'Veículos' },
-              { id: 'eletronicos', label: 'Eletrônicos' },
-              { id: 'imoveis', label: 'Imóveis' },
-              { id: 'empregos', label: 'Empregos' },
-              { id: 'servicos', label: 'Serviços' },
-              { id: 'moveis', label: 'Móveis' }
+              { id: 'veiculos', label: 'Veículos', count: 12 },
+              { id: 'eletronicos', label: 'Eletrônicos', count: 24 },
+              { id: 'imoveis', label: 'Imóveis', count: 8 },
+              { id: 'empregos', label: 'Empregos', count: 3 },
+              { id: 'esportes', label: 'Esportes', count: 5 },
+              { id: 'moveis', label: 'Móveis', count: 15 }
             ].map((category) => (
-              <Link href={`/categoria/${category.id}`} key={category.id} className="group block text-center p-6 border rounded-xl hover:shadow-lg hover:border-blue-500 transition-all bg-gray-50 hover:bg-white">
+              <Link href={`/anuncios?categoria=${category.id}`} key={category.id} className="group block text-center p-6 border rounded-xl hover:shadow-lg hover:border-blue-500 transition-all bg-gray-50 hover:bg-white">
                 <div className="w-16 h-16 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   📁
                 </div>
                 <h3 className="font-semibold text-gray-800">{category.label}</h3>
-                <span className="text-sm text-gray-500">120 Anúncios</span>
+                <span className="text-sm text-gray-500">{category.count} Anúncios</span>
               </Link>
             ))}
           </div>
@@ -73,21 +77,26 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-              <div key={item} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border">
+            {recentAds.map((ad) => (
+              <div key={ad.id} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border flex flex-col">
                 <div className="h-48 bg-gray-200 relative">
-                   <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">Destaque</div>
-                   <div className="absolute bottom-2 left-2 bg-gray-900/70 text-white text-xs px-2 py-1 rounded">Eletrônicos</div>
+                   <img src={ad.image} alt={ad.title} className="w-full h-full object-cover" />
+                   {ad.isFeatured && (
+                     <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">Destaque</div>
+                   )}
+                   <div className="absolute bottom-2 left-2 bg-gray-900/70 text-white text-xs px-2 py-1 rounded">{ad.category}</div>
                 </div>
-                <div className="p-5">
-                  <h3 className="font-bold text-lg mb-2 text-gray-800 hover:text-blue-600 cursor-pointer line-clamp-1">
-                    Smartphone Pro Max 256GB
-                  </h3>
-                  <div className="text-orange-500 font-bold text-xl mb-4">R$ 4.899,00</div>
+                <div className="p-5 flex-grow flex flex-col">
+                  <Link href={`/anuncios/${ad.id}`}>
+                    <h3 className="font-bold text-lg mb-2 text-gray-800 hover:text-blue-600 cursor-pointer line-clamp-2">
+                      {ad.title}
+                    </h3>
+                  </Link>
+                  <div className="text-orange-500 font-bold text-xl mb-4">{ad.currency} {ad.price.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                   
-                  <div className="flex justify-between items-center text-sm text-gray-500 border-t pt-4">
-                    <span className="flex items-center gap-1">📍 São Paulo</span>
-                    <span className="flex items-center gap-1">🕒 Há 2 horas</span>
+                  <div className="mt-auto flex justify-between items-center text-sm text-gray-500 border-t pt-4">
+                    <span className="flex items-center gap-1 truncate max-w-[60%]">📍 {ad.location}</span>
+                    <span className="flex items-center gap-1 whitespace-nowrap">🕒 {ad.postedAt}</span>
                   </div>
                 </div>
               </div>
