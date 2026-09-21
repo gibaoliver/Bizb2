@@ -43,11 +43,11 @@ export default async function AnunciosPage() {
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 bg-zinc-800 rounded-xl overflow-hidden relative shrink-0">
                     {anuncio.fotos && anuncio.fotos.length > 0 ? (
-                      <Image 
+                      <img 
                         src={anuncio.fotos[0]} 
                         alt={anuncio.titulo}
-                        fill
-                        className="object-cover"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

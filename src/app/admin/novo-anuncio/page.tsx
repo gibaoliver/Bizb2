@@ -96,18 +96,23 @@ export default function NovoAnuncio() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-300">Categoria</label>
-                  <select name="categoria" required className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all appearance-none">
+                  <select name="categoria" required className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                     <option value="">Selecione uma categoria</option>
-                    <option value="eletronicos">Eletrônicos e Celulares</option>
                     <option value="veiculos">Veículos</option>
+                    <option value="eletronicos">Eletrônicos e Celulares</option>
                     <option value="imoveis">Imóveis</option>
+                    <option value="moveis">Móveis e Decoração</option>
+                    <option value="empregos">Empregos e Vagas</option>
+                    <option value="esportes">Esportes e Lazer</option>
                     <option value="servicos">Serviços</option>
+                    <option value="moda">Moda e Beleza</option>
+                    <option value="outros">Outros</option>
                   </select>
                 </div>
                 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-300">Condição</label>
-                  <select name="condicao" required className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all appearance-none">
+                  <select name="condicao" required className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all appearance-none cursor-pointer">
                     <option value="novo">Novo</option>
                     <option value="usado">Usado</option>
                   </select>
@@ -133,7 +138,7 @@ export default function NovoAnuncio() {
             <input 
               type="file" 
               multiple 
-              accept="image/png, image/jpeg, image/webp" 
+              accept="image/*, .png, .jpg, .jpeg, .webp, .gif, .avif, .bmp, .heic, .heif, .svg" 
               className="hidden" 
               ref={fileInputRef}
               onChange={handleFileChange}
@@ -147,7 +152,7 @@ export default function NovoAnuncio() {
                 <Upload className="h-8 w-8 text-blue-500" />
               </div>
               <p className="text-white font-medium mb-1">Clique para enviar fotos</p>
-              <p className="text-zinc-500 text-sm">PNG, JPG ou WEBP (Máx. 10 fotos)</p>
+              <p className="text-zinc-500 text-sm">PNG, JPG, WEBP, GIF, AVIF ou qualquer formato (Máx. 10 fotos)</p>
             </div>
 
             {previews.length > 0 && (

@@ -1,11 +1,56 @@
-import { ads } from '@/data/ads';
+import { ads as mockAds } from '@/data/ads';
+import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
-  const ad = ads.find(a => a.id === resolvedParams.id);
-  
+  const id = resolvedParams.id;
+  const supabase = await createClient();
+
+  // 1. Tentar buscar no banco de dados Supabase
+  let ad: any = null;
+
+  const { data: dbAd } = await supabase
+    .from('anuncios')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (dbAd) {
+    ad = {
+      id: dbAd.id,
+      title: dbAd.titulo,
+      price: Number(dbAd.preco),
+      currency: 'R$',
+      image: dbAd.fotos?.[0] || 'https://images.unsplash.com/photo-1581291518655-9523c932edcf?w=600&auto=format&fit=crop',
+      gallery: dbAd.fotos && dbAd.fotos.length > 0 ? dbAd.fotos : ['https://images.unsplash.com/photo-1581291518655-9523c932edcf?w=600&auto=format&fit=crop'],
+      location: dbAd.localizacao,
+      category: dbAd.categoria,
+      postedAt: new Date(dbAd.criado_em).toLocaleDateString('pt-BR'),
+      description: dbAd.descricao,
+      features: {
+        'Condição': dbAd.condicao === 'novo' ? 'Novo' : 'Usado',
+        'Negociável': dbAd.negociavel ? 'Sim' : 'Não',
+        'Status': dbAd.status,
+      },
+      seller: {
+        name: 'Super Admin Bizb',
+        phone: '+55 11 99999-9999',
+        email: 'contato@bizb.com.br',
+        verified: true,
+      }
+    };
+  } else {
+    // 2. Fallback para os mock ads
+    const foundMock = mockAds.find(a => a.id === id);
+    if (foundMock) {
+      ad = foundMock;
+    }
+  }
+
   if (!ad) {
     notFound();
   }
@@ -18,7 +63,7 @@ export default async function AdDetailsPage({ params }: { params: Promise<{ id: 
         <div className="text-sm text-gray-500 mb-6 flex gap-2">
           <Link href="/" className="hover:text-blue-600">Início</Link> &gt; 
           <Link href="/anuncios" className="hover:text-blue-600">Anúncios</Link> &gt; 
-          <span className="text-gray-800">{ad.category}</span>
+          <span className="text-gray-800 capitalize">{ad.category}</span>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -26,7 +71,7 @@ export default async function AdDetailsPage({ params }: { params: Promise<{ id: 
           {/* Main Content (Left) */}
           <main className="w-full lg:w-2/3">
             {/* Header & Title */}
-            <div className="bg-white p-6 rounded-t-lg border-x border-t">
+            <div className="bg-white p-6 rounded-t-xl border-x border-t border-gray-200">
               <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{ad.title}</h1>
                 <div className="text-2xl md:text-3xl font-bold text-orange-500 whitespace-nowrap">
@@ -40,75 +85,70 @@ export default async function AdDetailsPage({ params }: { params: Promise<{ id: 
             </div>
 
             {/* Main Image Gallery */}
-            <div className="bg-black relative h-[400px] md:h-[500px]">
-              <img src={ad.image} alt={ad.title} className="w-full h-full object-contain" />
+            <div className="bg-black relative h-[350px] md:h-[450px] flex items-center justify-center">
+              <img 
+                src={ad.image} 
+                alt={ad.title} 
+                className="max-w-full max-h-full object-contain" 
+                loading="lazy"
+              />
             </div>
 
             {/* Thumbnail Gallery */}
-            <div className="bg-white border-x border-b p-4 rounded-b-lg mb-8 flex gap-2 overflow-x-auto">
-              {ad.gallery.map((img, idx) => (
-                <div key={idx} className="w-24 h-24 flex-shrink-0 cursor-pointer border-2 hover:border-blue-500 rounded overflow-hidden">
-                  <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-
-            {/* Details Section */}
-            <div className="bg-white p-6 rounded-lg border mb-8">
-              <h2 className="text-xl font-bold mb-4 border-b pb-2">Detalhes do Anúncio</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {Object.entries(ad.features).map(([key, value]) => (
-                  <div key={key} className="flex justify-between bg-gray-50 p-3 rounded">
-                    <span className="text-gray-500 font-medium">{key}:</span>
-                    <span className="font-semibold text-gray-800">{value}</span>
+            {ad.gallery && ad.gallery.length > 1 && (
+              <div className="bg-white border-x border-b border-gray-200 p-4 rounded-b-xl mb-8 flex gap-2 overflow-x-auto">
+                {ad.gallery.map((img: string, idx: number) => (
+                  <div key={idx} className="w-20 h-20 flex-shrink-0 border-2 hover:border-blue-500 rounded-lg overflow-hidden bg-gray-100">
+                    <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
-            </div>
+            )}
 
-            {/* Description Section */}
-            <div className="bg-white p-6 rounded-lg border mb-8">
-              <h2 className="text-xl font-bold mb-4 border-b pb-2">Descrição</h2>
-              <div className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {ad.description}
+            {/* Details Section */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 my-8">
+              <h2 className="text-xl font-bold mb-4 border-b pb-2 text-gray-800">Detalhes do Anúncio</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {Object.entries(ad.features || {}).map(([key, value]) => (
+                  <div key={key} className="flex justify-between border-b pb-2 text-sm">
+                    <span className="text-gray-500">{key}:</span>
+                    <span className="font-semibold text-gray-800">{String(value)}</span>
+                  </div>
+                ))}
               </div>
+
+              <h2 className="text-xl font-bold mb-4 border-b pb-2 text-gray-800">Descrição</h2>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                {ad.description}
+              </p>
             </div>
           </main>
 
           {/* Sidebar (Right) */}
-          <aside className="w-full lg:w-1/3 space-y-6">
-            
-            {/* Seller Card */}
-            <div className="bg-white p-6 rounded-lg border shadow-sm text-center">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-3xl font-bold mx-auto mb-4">
-                {ad.seller.name.charAt(0)}
+          <aside className="w-full lg:w-1/3">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 sticky top-24 space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Informações de Contato</h3>
+                <p className="text-sm text-gray-500">Entre em contato para saber mais sobre este item.</p>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-1">{ad.seller.name}</h3>
-              <p className="text-sm text-gray-500 mb-6">Membro desde {ad.seller.memberSince}</p>
-              
-              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-medium mb-3 transition-colors text-lg flex items-center justify-center gap-2">
-                📞 Ver Telefone
-              </button>
-              
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors text-lg flex items-center justify-center gap-2">
-                ✉️ Enviar Mensagem
-              </button>
-            </div>
 
-            {/* Safety Tips */}
-            <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
-              <h3 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
-                🛡️ Dicas de Segurança
-              </h3>
-              <ul className="text-sm text-yellow-700 space-y-2 list-disc pl-5">
-                <li>Encontre o vendedor em um lugar público.</li>
-                <li>Verifique o item antes de comprar.</li>
-                <li>Pague apenas depois de pegar o item.</li>
-                <li>Cuidado com ofertas irreais.</li>
-              </ul>
-            </div>
+              <div className="p-4 bg-gray-50 rounded-lg space-y-2 border border-gray-100">
+                <div className="font-semibold text-gray-800">{ad.seller?.name || 'Classificados Bizb'}</div>
+                <div className="text-sm text-gray-600">📱 {ad.seller?.phone || '+55 11 99999-9999'}</div>
+                <div className="text-sm text-gray-600">✉️ {ad.seller?.email || 'contato@bizb.com.br'}</div>
+              </div>
 
+              <a 
+                href={`https://wa.me/5511999999999?text=Ol%C3%A1%2C%20tenho%20interesse%20no%20an%C3%BAncio%3A%20${encodeURIComponent(ad.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                💬 Conversar no WhatsApp
+              </a>
+            </div>
           </aside>
+
         </div>
       </div>
     </div>

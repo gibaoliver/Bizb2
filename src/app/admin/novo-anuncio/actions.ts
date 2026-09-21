@@ -38,18 +38,33 @@ export async function createAnuncio(formData: FormData) {
 
   for (let i = 0; i < fotoFiles.length; i++) {
     const file = fotoFiles[i]
-    if (file.size === 0) continue // Ignorar arquivos vazios se houver
+    if (!file || file.size === 0) continue // Ignorar arquivos vazios
 
-    const ext = file.name.split('.').pop()
-    const fileName = `${user.id}-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+    // Extrair e sanitizar extensão
+    const originalExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const cleanExt = originalExt.replace(/[^a-z0-9]/gi, '')
+    const fileName = `${user.id}/${Date.now()}-${i}-${Math.random().toString(36).substring(7)}.${cleanExt}`
+
+    // Determinar Content-Type adequado para navegadores
+    const mimeType = file.type || (
+      cleanExt === 'png' ? 'image/png' :
+      cleanExt === 'webp' ? 'image/webp' :
+      cleanExt === 'gif' ? 'image/gif' :
+      cleanExt === 'svg' ? 'image/svg+xml' :
+      cleanExt === 'avif' ? 'image/avif' :
+      'image/jpeg'
+    )
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('imagens_anuncios')
-      .upload(fileName, file)
+      .upload(fileName, file, {
+        contentType: mimeType,
+        upsert: true,
+      })
 
     if (uploadError) {
       console.error('Erro no upload da foto:', uploadError)
-      return { error: `Erro ao fazer upload da imagem ${i + 1}.` }
+      return { error: `Erro ao fazer upload da imagem ${i + 1}: ${uploadError.message}` }
     }
 
     const { data: { publicUrl } } = supabase.storage
