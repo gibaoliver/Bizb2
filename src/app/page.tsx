@@ -16,21 +16,45 @@ export default function Home() {
           </p>
           
           {/* Main Search */}
-          <div className="max-w-4xl mx-auto bg-white p-3 rounded-lg shadow-lg flex flex-col md:flex-row gap-2">
-            <input 
-              type="text" 
-              placeholder="O que você está procurando?" 
-              className="flex-grow px-4 py-3 outline-none text-gray-800 border-b md:border-b-0 md:border-r"
-            />
-            <input 
-              type="text" 
-              placeholder="Localização" 
-              className="px-4 py-3 outline-none text-gray-800 border-b md:border-b-0 md:border-r md:w-64"
-            />
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-md transition-colors font-medium">
+          <form action="/anuncios" method="GET" className="max-w-4xl mx-auto bg-white p-2 md:p-3 rounded-lg md:rounded-xl shadow-lg flex flex-col md:flex-row gap-2 text-left">
+            <div className="flex-grow flex items-center border-b md:border-b-0 md:border-r border-gray-200">
+              <input 
+                type="text" 
+                name="q"
+                placeholder="O que você está procurando?" 
+                className="w-full px-4 py-3 outline-none text-gray-800 placeholder-gray-400"
+              />
+            </div>
+
+            <div className="border-b md:border-b-0 md:border-r border-gray-200 md:w-56 flex items-center">
+              <select 
+                name="categoria"
+                defaultValue=""
+                className="w-full px-4 py-3 outline-none text-gray-700 bg-transparent cursor-pointer"
+              >
+                <option value="">Todas as Categorias</option>
+                <option value="veiculos">Veículos</option>
+                <option value="eletronicos">Eletrônicos</option>
+                <option value="imoveis">Imóveis</option>
+                <option value="empregos">Empregos</option>
+                <option value="esportes">Esportes</option>
+                <option value="moveis">Móveis</option>
+              </select>
+            </div>
+
+            <div className="border-b md:border-b-0 md:border-r border-gray-200 md:w-52 flex items-center">
+              <input 
+                type="text" 
+                name="localizacao"
+                placeholder="Localização" 
+                className="w-full px-4 py-3 outline-none text-gray-800 placeholder-gray-400"
+              />
+            </div>
+
+            <button type="submit" className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-3 rounded-md md:rounded-lg transition-colors shadow-sm whitespace-nowrap">
               Buscar
             </button>
-          </div>
+          </form>
         </div>
       </section>
 

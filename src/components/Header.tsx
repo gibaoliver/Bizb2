@@ -23,23 +23,18 @@ export default function Header() {
           BIZB<span className="text-orange-500">.</span>
         </Link>
 
-        {/* Search Bar & Categories */}
-        <div className="flex-grow max-w-2xl hidden lg:flex items-center border rounded-md overflow-hidden">
-          <select className="px-4 py-3 bg-gray-50 border-r outline-none text-gray-700">
-            <option>Todas as Categorias</option>
-            <option>Veículos</option>
-            <option>Eletrônicos</option>
-            <option>Imóveis</option>
-          </select>
+        {/* Search Bar */}
+        <form action="/anuncios" method="GET" className="flex-grow max-w-2xl hidden lg:flex items-center border border-gray-300 rounded-md overflow-hidden bg-white focus-within:border-blue-500">
           <input 
             type="text" 
+            name="q"
             placeholder="O que você está procurando?" 
-            className="flex-grow px-4 py-3 outline-none"
+            className="flex-grow px-4 py-3 outline-none text-gray-700 placeholder-gray-400"
           />
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 transition-colors">
+          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 transition-colors font-medium">
             Buscar
           </button>
-        </div>
+        </form>
 
         {/* Action Button */}
         <Link 
