@@ -1,4 +1,5 @@
 import { Package, Eye, TrendingUp, DollarSign } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   const stats = [
@@ -64,13 +65,13 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div className="bg-zinc-950/50 backdrop-blur-xl border border-zinc-800/50 rounded-2xl p-6">
           <h3 className="text-lg font-semibold text-white mb-6">Ações Rápidas</h3>
-          <div className="space-y-3">
-            <button className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+          <div className="space-y-3 flex flex-col">
+            <Link href="/admin/novo-anuncio" className="w-full text-center bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.3)]">
               Criar Novo Anúncio
-            </button>
-            <button className="w-full bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 font-medium py-3 px-4 rounded-xl transition-colors">
+            </Link>
+            <Link href="/admin/anuncios" className="w-full text-center bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 font-medium py-3 px-4 rounded-xl transition-colors">
               Ver Todos os Anúncios
-            </button>
+            </Link>
             <button className="w-full bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 font-medium py-3 px-4 rounded-xl transition-colors">
               Estatísticas Detalhadas
             </button>
