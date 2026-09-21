@@ -12,7 +12,6 @@ export default function Header() {
           </div>
           <div className="flex gap-4">
             <Link href="/login" className="hover:text-blue-600">Entrar</Link>
-            <Link href="/cadastro" className="hover:text-blue-600">Cadastrar</Link>
           </div>
         </div>
       </div>
@@ -44,8 +43,8 @@ export default function Header() {
 
         {/* Action Button */}
         <Link 
-          href="/publicar-anuncio" 
-          className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-md transition-colors shadow-sm"
+          href="/como-anunciar" 
+          className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-md transition-colors shadow-sm flex items-center justify-center gap-2"
         >
           + Publicar Anúncio
         </Link>
